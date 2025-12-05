@@ -1,0 +1,44 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+
+spring:
+  application:
+    name: ${APP_NAME:gateway}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: client-service-auth
+              uri: ${CLIENT_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/auth/**
+              filters:
+                - StripPrefix=0
+            - id: client-service
+              uri: ${CLIENT_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/client/**
+              filters:
+                - StripPrefix=0
+                - JwtToHeaders
+            - id: product-service
+              uri: ${PRODUCT_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/product/**
+              filters:
+                - StripPrefix=0
+                - JwtToHeaders
+            - id: cart-service
+              uri: ${PRODUCT_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/cart/**
+              filters:
+                - StripPrefix=0
+                - JwtToHeaders
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
